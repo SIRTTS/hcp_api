@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8088" doc:name="HTTP Listener Configuration"/>
+    <db:mysql-config name="MySQL_Configuration"      doc:name="MySQL Configuration" url="jdbc:mysql://mysql.stackcp.com:49715/sirtts-hcp-app-3137fd82?user=sirtts-hcp-app-3137fd82&amp;password=hcp-app-3137fd82&amp;noAccessToProcedureBodies=true"/>
+    <spring:beans>
+        <spring:bean id="Bean" name="Methods" class="hcp.Methods"/>
+    </spring:beans>
+    <smtp:connector name="SMTP" validateConnections="true" doc:name="SMTP" contentType="text/html"/>
+	   	<flow name="/register">
+		<http:listener config-ref="HTTP_Listener_Configuration" path="/register" allowedMethods="POST" doc:name="HTTP"/>
+		<set-variable variableName="email" value="#[json:email]" doc:name="Email"/>
+        <set-variable variableName="gender" value="#[json:gender]" doc:name="Gender"/>
+        <set-variable variableName="birthday" value="#[json:birthday]" doc:name="Birthday"/>
+		<invoke object-ref="Methods" method="encryptPW" methodArguments="#[json:password]" doc:name="Encrypt Password"/>
+		<set-variable variableName="password" value="#[payload]" doc:name="Password"/>
+		<invoke object-ref="Methods" method="generateToken" doc:name="Generate Token"/>
+		<set-variable variableName="token" value="#[payload]" doc:name="Token"/>
+		<db:stored-procedure config-ref="MySQL_Configuration" doc:name="SP - registration">
+            <db:parameterized-query><![CDATA[CALL registration(:email, :password, :token , :gender , :birthday);]]></db:parameterized-query>
+            <db:in-param name="email" type="VARCHAR" value="#[flowVars.email]"/>
+            <db:in-param name="password" type="VARCHAR" value="#[flowVars.password]"/>
+            <db:in-param name="token" type="VARCHAR" value="#[flowVars.token]"/>
+            <db:in-param name="gender" type="VARCHAR" value="#[flowVars.gender]"/>
+            <db:in-param name="birthday" type="DATE" value="#[flowVars.birthday]"/>
+		</db:stored-procedure>
+        <set-payload value="&lt;p&gt; To activate your account &lt;a href=&quot;http://hcp.cloudhub.io/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token]&quot;&gt; click here &lt;/a&gt;&lt;/p&gt; &lt;p&gt; or copy and paste this link into your browser &lt;/p&gt; &lt;p&gt; http://hcp.cloudhub.io/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token] &lt;/p&gt;" mimeType="text/html" doc:name="Email Content"/>
+        <smtp:outbound-endpoint host="smtp.hamys.me" port="587" user="hcp@hamys.me" password="hcp@sirtts" connector-ref="SMTP" responseTimeout="10000" doc:name="SMTP" from="hcp@hamys.me" subject="Account Activation" to="#[flowVars.email]" mimeType="text/html"/>
+		<set-payload value="{
+	&quot;status&quot;: true
+}" doc:name="True" mimeType="application/json"/>
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<set-payload value="{
+	&quot;status&quot;: false
+}" doc:name="False" mimeType="application/json"/>
+		</catch-exception-strategy>
+	</flow>
+    <flow name="/activate_account">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/activate_account" allowedMethods="GET" doc:name="HTTP"/>
+        <invoke object-ref="Methods" method="generateToken" doc:name="Generate Token"/>
+        <db:update config-ref="MySQL_Configuration" doc:name="Update - users">
+            <db:parameterized-query><![CDATA[UPDATE `hcp-users` SET `status`= 1, `token` = #[payload] WHERE (`email`=#[message.inboundProperties.'http.query.params'.email] AND `token`=#[message.inboundProperties.'http.query.params'.token])]]></db:parameterized-query>
+        </db:update>
+        <choice doc:name="Choice">
+            <when expression="payload = 0">
+                <set-payload value="{  
+&quot;status&quot;: false,
+&quot;error message&quot;: &quot;account is already activated&quot;
+ }" mimeType="application/json" doc:name="False W/ Error"/>
+            </when>
+            <otherwise>
+                <set-payload value="{  &quot;status&quot;: true }" mimeType="application/json" doc:name="True"/>
+            </otherwise>
+        </choice>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false }" mimeType="application/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/login">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/login" allowedMethods="POST" doc:name="HTTP"/>
+        <set-variable variableName="email" value="#[json:email]" doc:name="Email"/>
+        <invoke object-ref="Methods" method="encryptPW" methodArguments="#[json:password]" doc:name="Encrypt Password"/>
+        <set-variable variableName="password" value="#[payload]" doc:name="Password"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - users">
+            <db:parameterized-query><![CDATA[SELECT `id`, `status` FROM `hcp-users` WHERE (`email`= #[flowVars.email] AND `password`= #[flowVars.password])]]></db:parameterized-query>
+        </db:select>
+        <echo-component doc:name="Echo"/>
+        <choice doc:name="Choice">
+            <when expression="#[payload.isEmpty()]">
+                <set-payload value="{  
+&quot;status&quot;: false,
+&quot;user id&quot;: 0,
+&quot;error message&quot;: &quot;Wrong Credentials&quot;
+ }" mimeType="application/json" doc:name="False Not Found"/>
+            </when>
+            <when expression="#[payload.get(0).status == true]">
+                <set-payload value="{  
+&quot;status&quot;: true,
+&quot;user id&quot;: #[payload[0].id],
+&quot;error message&quot;: &quot;&quot;
+ }" mimeType="application/json" doc:name="True"/>
+            </when>
+            <otherwise>
+                <set-payload value="{  
+&quot;status&quot;: false,
+&quot;user id&quot;: #[payload[0].id],
+&quot;error message&quot;: &quot;Account is not activated!&quot;
+ }" mimeType="application/json" doc:name="False Activation"/>
+            </otherwise>
+        </choice>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  
+&quot;status&quot;: false,
+&quot;user id&quot;: 0,
+&quot;error message&quot;: &quot;Unexpected Error!&quot;
+ }" mimeType="application/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/vital_signs">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/vital_signs" allowedMethods="POST" doc:name="HTTP"/>
+        <db:stored-procedure config-ref="MySQL_Configuration" doc:name="SP - vital_signs">
+            <db:parameterized-query><![CDATA[CALL vital_signs(:id);]]></db:parameterized-query>
+            <db:in-param name="id" type="NUMERIC" value="#[json:userid]"/>
+        </db:stored-procedure>
+        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+        <choice doc:name="Choice">
+            <when expression="#[message.payload.resultSet4.isEmpty()]">
+                <set-payload doc:name="4 Empty" mimeType="text/json" value="{     &quot;blood pressure&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet1[0].date]&quot;,         &quot;systolic&quot; : #[message.payload.resultSet1[0].systolic],         &quot;diastolic&quot; : #[message.payload.resultSet1[0].diastolic]     },     &quot;body temperature&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet2[0].date]&quot;,         &quot;celsius&quot; : #[message.payload.resultSet2[0].celsius]     },     &quot;heart rate&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet3[0].date]&quot;,         &quot;bpm&quot; : #[message.payload.resultSet3[0].bpm]     },     &quot;respiratory rate&quot;:{         &quot;date&quot;:&quot;NULL&quot;,         &quot;bpm&quot; :0     } }"/>
+            </when>
+            <when expression="#[message.payload.resultSet3.isEmpty()]">
+                <set-payload doc:name="3 Empty" mimeType="text/json" value="{     &quot;blood pressure&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet1[0].date]&quot;,         &quot;systolic&quot; : #[message.payload.resultSet1[0].systolic],         &quot;diastolic&quot; : #[message.payload.resultSet1[0].diastolic]     },     &quot;body temperature&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet2[0].date]&quot;,         &quot;celsius&quot; : #[message.payload.resultSet2[0].celsius]     },     &quot;heart rate&quot;:{         &quot;date&quot;:&quot;NULL&quot;,         &quot;bpm&quot; :0     },     &quot;respiratory rate&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet4[0].date]&quot;,         &quot;bpm&quot; : #[message.payload.resultSet4[0].bpm]     } }"/>
+            </when>
+            <when expression="#[message.payload.resultSet2.isEmpty()]">
+                <set-payload value="{     &quot;blood pressure&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet1[0].date]&quot;,         &quot;systolic&quot; : #[message.payload.resultSet1[0].systolic],         &quot;diastolic&quot; : #[message.payload.resultSet1[0].diastolic]     },     &quot;body temperature&quot;:{         &quot;date&quot;:&quot;NULL&quot;,         &quot;celsius&quot; : 0     },     &quot;heart rate&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet3[0].date]&quot;,         &quot;bpm&quot; : #[message.payload.resultSet3[0].bpm]     },     &quot;respiratory rate&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet4[0].date]&quot;,         &quot;bpm&quot; : #[message.payload.resultSet4[0].bpm]     } }" mimeType="text/json" doc:name="2 Empty"/>
+            </when>
+            <when expression="#[message.payload.resultSet1.isEmpty()]">
+                <set-payload value="{     &quot;blood pressure&quot;:{         &quot;date&quot;:&quot;NULL&quot;,         &quot;systolic&quot; : 0,         &quot;diastolic&quot; : 0     },     &quot;body temperature&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet2[0].date]&quot;,         &quot;celsius&quot; : #[message.payload.resultSet2[0].celsius]     },     &quot;heart rate&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet3[0].date]&quot;,         &quot;bpm&quot; : #[message.payload.resultSet3[0].bpm]     },     &quot;respiratory rate&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet4[0].date]&quot;,         &quot;bpm&quot; : #[message.payload.resultSet4[0].bpm]     } }" mimeType="text/json" doc:name="1 Empty"/>
+            </when>
+            <otherwise>
+                <set-payload value="{     &quot;blood pressure&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet1[0].date]&quot;,         &quot;systolic&quot; : #[message.payload.resultSet1[0].systolic],         &quot;diastolic&quot; : #[message.payload.resultSet1[0].diastolic]     },     &quot;body temperature&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet2[0].date]&quot;,         &quot;celsius&quot; : #[message.payload.resultSet2[0].celsius]     },     &quot;heart rate&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet3[0].date]&quot;,         &quot;bpm&quot; : #[message.payload.resultSet3[0].bpm]     },     &quot;respiratory rate&quot;:{         &quot;date&quot;:&quot;#[message.payload.resultSet4[0].date]&quot;,         &quot;bpm&quot; : #[message.payload.resultSet4[0].bpm]     } }" mimeType="text/json" doc:name="True"/>
+            </otherwise>
+        </choice>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{
+	&quot;status&quot;:false,
+	&quot;error message&quot;: &quot;Unexpected Error!&quot;
+}" mimeType="text/json" doc:name="Set Payload"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/blood_pressure/set">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_pressure/set" allowedMethods="POST" doc:name="HTTP"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - blood_pressure">
+            <db:parameterized-query><![CDATA[INSERT INTO `hcp-vs_blood_pressure`(`userid`, `systolic`, `diastolic`, `date`, `time`) VALUES (#[json:userid],#[json:systolic],#[json:diastolic],#[json:date],#[json:time])]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{
+	&quot;status&quot;: true
+}" mimeType="text/json" doc:name="True"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{
+	&quot;status&quot;: false,
+	&quot;error message&quot;: &quot;Unexpected Error!&quot;
+}" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/heart_rate/set">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/heart_rate/set" allowedMethods="POST" doc:name="HTTP"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - heart_rate">
+            <db:parameterized-query><![CDATA[INSERT INTO `hcp-vs_heart_rate`(`userid`, `bpm`, `date`, `time`) VALUES (#[json:userid],#[json:bpm],#[json:date],#[json:time])]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{
+	&quot;status&quot;: true
+}" mimeType="text/json" doc:name="True"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{
+	&quot;status&quot;: false,
+	&quot;error message&quot;: &quot;Unexpected Error!&quot;
+}" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/body_temperature/set">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/body_temperature/set" allowedMethods="POST" doc:name="HTTP"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - body_temperature">
+            <db:parameterized-query><![CDATA[INSERT INTO `hcp-vs_body_temperature`(`userid`, `celsius`, `date`, `time`) VALUES (#[json:userid],#[json:celsius],#[json:date],#[json:time])]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{
+	&quot;status&quot;: true
+}" mimeType="text/json" doc:name="True"/>
+        <catch-exception-strategy doc:name="Exception Strategy">
+            <set-payload value="{
+	&quot;status&quot;: false,
+	&quot;error message&quot;: &quot;Unexpected Error!&quot;
+}" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/respiratory_rate/set">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/respiratory_rate/set" allowedMethods="POST" doc:name="HTTP"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - respiratory_rate">
+            <db:parameterized-query><![CDATA[INSERT INTO `hcp-vs_respiratory_rate`(`userid`, `bpm`, `date`, `time`) VALUES (#[json:userid],#[json:bpm],#[json:date],#[json:time])]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{
+	&quot;status&quot;: true
+}" mimeType="text/json" doc:name="True"/>
+        <catch-exception-strategy doc:name="Copy_of_Exception Strategy">
+            <set-payload value="{
+	&quot;status&quot;: false,
+	&quot;error message&quot;: &quot;Unexpected Error!&quot;
+}" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/blood_pressure">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_pressure" allowedMethods="POST" doc:name="HTTP"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_pressure">
+            <db:parameterized-query><![CDATA[SELECT `systolic`, `diastolic`, `date`, `time` FROM `hcp-vs_blood_pressure` WHERE userid = #[json:userid]]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/heart_rate">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/heart_rate" allowedMethods="POST" doc:name="HTTP"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - heart_rate">
+            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_heart_rate` WHERE userid = #[json:userid]]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/body_temperature">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/body_temperature" allowedMethods="POST" doc:name="HTTP"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - body_temperature">
+            <db:parameterized-query><![CDATA[SELECT `celsius`, `date`, `time` FROM `hcp-vs_body_temperature` WHERE userid = #[json:userid]]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/respiratory_rate">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/respiratory_rate" allowedMethods="POST" doc:name="HTTP"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT -respiratory_rate">
+            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_respiratory_rate` WHERE userid = #[json:userid]]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+	
+</mule>
