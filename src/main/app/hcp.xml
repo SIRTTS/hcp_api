@@ -11,7 +11,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
-    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration"/>
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8088" doc:name="HTTP Listener Configuration"/>
     <db:mysql-config name="MySQL_Configuration"      doc:name="MySQL Configuration" url="jdbc:mysql://mysql.stackcp.com:49715/sirtts-hcp-app-3137fd82?user=sirtts-hcp-app-3137fd82&amp;password=hcp-app-3137fd82&amp;noAccessToProcedureBodies=true"/>
     <spring:beans>
         <spring:bean id="Bean" name="Methods" class="hcp.Methods"/>
@@ -255,10 +255,38 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/menstrual_cycle">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/menstrual_cycle" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - menstrual_cycle">
-            <db:parameterized-query><![CDATA[SELECT `start_time`, `end_time`, `start_date`, `end_date` FROM `hcp-menstrual_cycle` WHERE userid = #[json:userid];]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `start_time` AS 'start time', `end_time` AS 'end time', `start_date` AS 'start date', `end_date` AS 'end date' FROM `hcp-menstrual_cycle` WHERE userid = #[json:userid];]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Exception Strategy">
+            <set-payload value="{
+	&quot;status&quot;: false,
+	&quot;error message&quot;, &quot;Unexpected Error!&quot;
+}" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/sugar_test/set">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/sugar_test/set" allowedMethods="POST" doc:name="HTTP"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - diabetes_sugar_test">
+            <db:parameterized-query><![CDATA[INSERT INTO `hcp-diabetes_sugar_test`(`userid`, `test_result`, `date`, `time`) VALUES (#[json:userid],#[json:test result],#[json:date],#[json:time]);]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{
+	&quot;status&quot;: true
+}" mimeType="text/json" doc:name="True"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{
+	&quot;status&quot;: false,
+	&quot;error message&quot;, &quot;Unexpected Error!&quot;
+}" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/sugar_test">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/sugar_test" allowedMethods="POST" doc:name="HTTP"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - diabetes_sugar_test">
+            <db:parameterized-query><![CDATA[SELECT `test_result` AS `test result`, `date`, `time` FROM `hcp-diabetes_sugar_test` WHERE userid = #[json:userid]]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
             <set-payload value="{
 	&quot;status&quot;: false,
 	&quot;error message&quot;, &quot;Unexpected Error!&quot;
