@@ -171,7 +171,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/blood_pressure">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_pressure" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_pressure">
-            <db:parameterized-query><![CDATA[SELECT `systolic`, `diastolic`, `date`, `time` FROM `hcp-vs_blood_pressure` WHERE userid = #[json:userid] ORDER BY `date`, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `systolic`, `diastolic`, `date`, `time` FROM `hcp-vs_blood_pressure` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -181,7 +181,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/heart_rate">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/heart_rate" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - heart_rate">
-            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_heart_rate` WHERE userid = #[json:userid] ORDER BY `date`, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_heart_rate` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -191,7 +191,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/body_temperature">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/body_temperature" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - body_temperature">
-            <db:parameterized-query><![CDATA[SELECT `celsius`, `date`, `time` FROM `hcp-vs_body_temperature` WHERE userid = #[json:userid] ORDER BY `date`, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `celsius`, `date`, `time` FROM `hcp-vs_body_temperature` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -201,7 +201,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/respiratory_rate">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/respiratory_rate" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT -respiratory_rate">
-            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_respiratory_rate` WHERE userid = #[json:userid] ORDER BY `date`, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_respiratory_rate` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -226,7 +226,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/menstrual_cycle">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/menstrual_cycle" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - menstrual_cycle">
-            <db:parameterized-query><![CDATA[SELECT `start_time` AS 'start time', `end_time` AS 'end time', `start_date` AS 'start date', `end_date` AS 'end date' FROM `hcp-menstrual_cycle` WHERE userid = #[json:userid] ORDER BY `date`, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `start_time` AS 'start time', `end_time` AS 'end time', `start_date` AS 'start date', `end_date` AS 'end date' FROM `hcp-menstrual_cycle` WHERE userid = #[json:userid] ORDER BY `created_at` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Exception Strategy">
@@ -254,7 +254,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/sugar_test">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/sugar_test" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - diabetes_sugar_test">
-            <db:parameterized-query><![CDATA[SELECT `test_result` AS `test result`, `date`, `time` FROM `hcp-diabetes_sugar_test` WHERE userid = #[json:userid] ORDER BY `date`, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `test_result` AS `test result`, `date`, `time` FROM `hcp-diabetes_sugar_test` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
