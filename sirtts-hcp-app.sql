@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: shareddb1d.hosting.stackcp.net
--- Generation Time: Sep 13, 2017 at 07:40 PM
+-- Generation Time: Sep 14, 2017 at 08:26 PM
 -- Server version: 10.1.14-MariaDB
 -- PHP Version: 5.6.30
 
@@ -21,6 +21,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `sirtts-hcp-app-3137fd82`
 --
+CREATE DATABASE IF NOT EXISTS `sirtts-hcp-app-3137fd82` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
+USE `sirtts-hcp-app-3137fd82`;
 
 DELIMITER $$
 --
@@ -46,6 +48,22 @@ CREATE DEFINER=`sirtts-hcp-app-3137fd82`@`%` PROCEDURE `vital_signs` (IN `id` IN
 END$$
 
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hcp-dentist_visit`
+--
+
+CREATE TABLE `hcp-dentist_visit` (
+  `id` int(11) NOT NULL,
+  `userid` int(11) NOT NULL,
+  `treatments` varchar(255) NOT NULL,
+  `date` date NOT NULL,
+  `time` time DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -185,6 +203,12 @@ CREATE TABLE `hcp-vs_respiratory_rate` (
 --
 
 --
+-- Indexes for table `hcp-dentist_visit`
+--
+ALTER TABLE `hcp-dentist_visit`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `hcp-diabetes_sugar_test`
 --
 ALTER TABLE `hcp-diabetes_sugar_test`
@@ -239,15 +263,20 @@ ALTER TABLE `hcp-vs_respiratory_rate`
 --
 
 --
+-- AUTO_INCREMENT for table `hcp-dentist_visit`
+--
+ALTER TABLE `hcp-dentist_visit`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+--
 -- AUTO_INCREMENT for table `hcp-diabetes_sugar_test`
 --
 ALTER TABLE `hcp-diabetes_sugar_test`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 --
 -- AUTO_INCREMENT for table `hcp-menstrual_cycle`
 --
 ALTER TABLE `hcp-menstrual_cycle`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT for table `hcp-users`
 --
@@ -267,7 +296,7 @@ ALTER TABLE `hcp-vs_blood_pressure`
 -- AUTO_INCREMENT for table `hcp-vs_body_temperature`
 --
 ALTER TABLE `hcp-vs_body_temperature`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 --
 -- AUTO_INCREMENT for table `hcp-vs_heart_rate`
 --
@@ -277,7 +306,7 @@ ALTER TABLE `hcp-vs_heart_rate`
 -- AUTO_INCREMENT for table `hcp-vs_respiratory_rate`
 --
 ALTER TABLE `hcp-vs_respiratory_rate`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;COMMIT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
