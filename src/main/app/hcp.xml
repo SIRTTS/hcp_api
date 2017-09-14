@@ -48,10 +48,9 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/activate_account">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/activate_account" allowedMethods="GET" doc:name="HTTP"/>
         <invoke object-ref="Methods" method="generateToken" doc:name="Generate Token"/>
-        <db:update config-ref="MySQL_Configuration" doc:name="Update - users">
+        <db:update config-ref="MySQL_Configuration" doc:name="UPDATE - users">
             <db:parameterized-query><![CDATA[UPDATE `hcp-users` SET `status`= 1, `token` = #[payload] WHERE (`email`=#[message.inboundProperties.'http.query.params'.email] AND `token`=#[message.inboundProperties.'http.query.params'.token] AND `status`= 0)]]></db:parameterized-query>
         </db:update>
-        <logger message="#[payload]" level="INFO" doc:name="Logger"/>
         <choice doc:name="Choice">
             <when expression="#[payload == 0]">
                 <set-payload value="&lt;h1&gt; HCP &lt;/h1&gt;
@@ -74,7 +73,6 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - users">
             <db:parameterized-query><![CDATA[SELECT `id`, `status` FROM `hcp-users` WHERE (`email`= #[flowVars.email] AND `password`= #[flowVars.password])]]></db:parameterized-query>
         </db:select>
-        <echo-component doc:name="Echo"/>
         <choice doc:name="Choice">
             <when expression="#[payload.isEmpty()]">
                 <set-payload value="{   &quot;status&quot;: false, &quot;userid&quot;: 0, &quot;error message&quot;: &quot;Wrong Credentials&quot;  }" mimeType="application/json" doc:name="False Not Found"/>
@@ -105,7 +103,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
             <set-payload value="{
 	&quot;status&quot;:false,
 	&quot;error message&quot;: &quot;Unexpected Error!&quot;
-}" mimeType="text/json" doc:name="Set Payload"/>
+}" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
     <flow name="/blood_pressure/set">
@@ -146,7 +144,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <set-payload value="{
 	&quot;status&quot;: true
 }" mimeType="text/json" doc:name="True"/>
-        <catch-exception-strategy doc:name="Exception Strategy">
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
             <set-payload value="{
 	&quot;status&quot;: false,
 	&quot;error message&quot;: &quot;Unexpected Error!&quot;
@@ -161,7 +159,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <set-payload value="{
 	&quot;status&quot;: true
 }" mimeType="text/json" doc:name="True"/>
-        <catch-exception-strategy doc:name="Copy_of_Exception Strategy">
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
             <set-payload value="{
 	&quot;status&quot;: false,
 	&quot;error message&quot;: &quot;Unexpected Error!&quot;
@@ -217,10 +215,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 	&quot;status&quot;: true
 }" doc:name="True"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
-            <set-payload value="{
-	&quot;status&quot;: false,
-	&quot;error message&quot;, &quot;Unexpected Error!&quot;
-}" mimeType="text/json" doc:name="False"/>
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
     <flow name="/menstrual_cycle">
@@ -230,10 +225,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Exception Strategy">
-            <set-payload value="{
-	&quot;status&quot;: false,
-	&quot;error message&quot;, &quot;Unexpected Error!&quot;
-}" mimeType="text/json" doc:name="False"/>
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
     <flow name="/sugar_test/set">
@@ -245,10 +237,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 	&quot;status&quot;: true
 }" mimeType="text/json" doc:name="True"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
-            <set-payload value="{
-	&quot;status&quot;: false,
-	&quot;error message&quot;, &quot;Unexpected Error!&quot;
-}" mimeType="text/json" doc:name="False"/>
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
     <flow name="/sugar_test">
@@ -258,10 +247,27 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
-            <set-payload value="{
-	&quot;status&quot;: false,
-	&quot;error message&quot;, &quot;Unexpected Error!&quot;
-}" mimeType="text/json" doc:name="False"/>
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/dentist_visit/set">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit/set" allowedMethods="POST" doc:name="HTTP"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - dentist_visit">
+            <db:parameterized-query><![CDATA[INSERT INTO `hcp-dentist_visit`(`userid`, `treatments`, `date`, `time`) VALUES (#[json:userid],#[json:treatments],#[json:date],#[json:time]);]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{  &quot;status&quot;: true }" mimeType="text/json" doc:name="True"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="/dentist_visit">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit" allowedMethods="POST" doc:name="HTTP"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - dentist_visit">
+            <db:parameterized-query><![CDATA[SELECT `treatments`, `date`, `time` FROM `hcp-dentist_visit` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
 	
