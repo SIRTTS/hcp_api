@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
 	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
@@ -307,25 +309,34 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
             <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
-    <flow name="/blood_test">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test" allowedMethods="POST" doc:name="HTTP"/>
+    <flow name="/blood_test/all">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test/all" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_test">
-            <db:parameterized-query><![CDATA[SELECT `date`, `time` FROM `hcp-blood_test` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `id`, `date`, `time` FROM `hcp-blood_test` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
             <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
-    <flow name="/blood_test/all">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test/all" allowedMethods="POST" doc:name="HTTP"/>
+    <flow name="/blood_test">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test" allowedMethods="POST" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_test">
-            <db:parameterized-query><![CDATA[SELECT `userid`, `17 Hydroxyprogesterone`, `25-hydroxyvitamin D`, `Acetoacetate`, `Acidity`, `Alcohol`, `Ammonia`, `Amylase`, `Ascorbic Acid`, `Bicarbonate`, `Bilirubin`, `Blood Volume`, `Calcium`, `Carbon Dioxide Pressure`, `Carbon Monoxide`, `CD4 Cell Count`, `Ceruloplasmin`, `Chloride`, `Complete Blood Cell Count`, `Copper`, `Creatine Kinase`, `Creatine Kinase Isoenzymes`, `Creatinine`, `Electrolytes`, `Erythrocyte Sedimentation Rate`, `Glucose`, `Hematocrit`, `Hemoglobin`, `Iron`, `Iron-binding Capacity`, `Lactate`, `Lactic Dehydrogenase`, `Lead`, `Lipase`, `Zinc`, `Lipids Cholesterol`, `Lipids Triglycerides`, `Magnesium`, `Mean Corpuscular Hemoglobin`, `Mean Corpuscular Hemoglobin Concentration`, `Mean Corpuscular Volume`, `Osmolality`, `Oxygen Pressure`, `Oxygen Saturation`, `Phosphatase, Prostatic`, `Phosphatase`, `Phosphorus`, `Platelet Count`, `Potassium`, `Prostate-Specific Antigen`, `Proteins Total`, `Proteins Albumin`, `Proteins Globulin`, `Prothrombin`, `Pyruvic Acid`, `Red Blood Cell Count`, `Sodium`, `Thyroid-Stimulating Hormone`, `Transaminase Alanine`, `Transaminase Aspartate`, `Urea Nitrogen`, `BUN/Creatinine Ratio`, `Uric Acid`, `Vitamin A`, `WBC`, `White Blood Cell Count`, `date`, `time` FROM `hcp-blood_test` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `17 Hydroxyprogesterone`, `25-hydroxyvitamin D`, `Acetoacetate`, `Acidity`, `Alcohol`, `Ammonia`, `Amylase`, `Ascorbic Acid`, `Bicarbonate`, `Bilirubin`, `Blood Volume`, `Calcium`, `Carbon Dioxide Pressure`, `Carbon Monoxide`, `CD4 Cell Count`, `Ceruloplasmin`, `Chloride`, `Complete Blood Cell Count`, `Copper`, `Creatine Kinase`, `Creatine Kinase Isoenzymes`, `Creatinine`, `Electrolytes`, `Erythrocyte Sedimentation Rate`, `Glucose`, `Hematocrit`, `Hemoglobin`, `Iron`, `Iron-binding Capacity`, `Lactate`, `Lactic Dehydrogenase`, `Lead`, `Lipase`, `Zinc`, `Lipids Cholesterol`, `Lipids Triglycerides`, `Magnesium`, `Mean Corpuscular Hemoglobin`, `Mean Corpuscular Hemoglobin Concentration`, `Mean Corpuscular Volume`, `Osmolality`, `Oxygen Pressure`, `Oxygen Saturation`, `Phosphatase, Prostatic`, `Phosphatase`, `Phosphorus`, `Platelet Count`, `Potassium`, `Prostate-Specific Antigen`, `Proteins Total`, `Proteins Albumin`, `Proteins Globulin`, `Prothrombin`, `Pyruvic Acid`, `Red Blood Cell Count`, `Sodium`, `Thyroid-Stimulating Hormone`, `Transaminase Alanine`, `Transaminase Aspartate`, `Urea Nitrogen`, `BUN/Creatinine Ratio`, `Uric Acid`, `Vitamin A`, `WBC`, `White Blood Cell Count` FROM `hcp-blood_test` WHERE id = #[json:id] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Copy_of_Catch Exception Strategy">
             <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
-	
+    <flow name="/blood_test/fields">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test/fields" allowedMethods="GET" doc:name="HTTP"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_test">
+            <db:parameterized-query><![CDATA[SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'sirtts-hcp-app-3137fd82' AND TABLE_NAME = 'hcp-blood_test' AND DATA_TYPE = 'FLOAT';]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
 </mule>
