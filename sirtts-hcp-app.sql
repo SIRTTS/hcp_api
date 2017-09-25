@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: shareddb1d.hosting.stackcp.net
--- Generation Time: Sep 14, 2017 at 08:26 PM
+-- Generation Time: Sep 25, 2017 at 09:58 AM
 -- Server version: 10.1.14-MariaDB
 -- PHP Version: 5.6.30
 
@@ -21,33 +21,86 @@ SET time_zone = "+00:00";
 --
 -- Database: `sirtts-hcp-app-3137fd82`
 --
-CREATE DATABASE IF NOT EXISTS `sirtts-hcp-app-3137fd82` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `sirtts-hcp-app-3137fd82`;
 
-DELIMITER $$
+-- --------------------------------------------------------
+
 --
--- Procedures
+-- Table structure for table `hcp-blood_test`
 --
-CREATE DEFINER=`sirtts-hcp-app-3137fd82`@`%` PROCEDURE `registration` (IN `email` VARCHAR(255), IN `password` VARCHAR(255), IN `token` VARCHAR(255), IN `gender` VARCHAR(20), IN `birthday` DATE)  BEGIN
-   INSERT INTO `hcp-users`(`email`, `password`, `token`, `status`) VALUES (email, password, token, 0);
-   INSERT INTO `hcp-user_details`(`userid`,`gender`,`birthday`) VALUES (LAST_INSERT_ID(),gender,birthday);
-END$$
 
-CREATE DEFINER=`sirtts-hcp-app-3137fd82`@`%` PROCEDURE `vital_signs` (IN `id` INT)  BEGIN
-      SELECT `systolic`,`diastolic`, `date` FROM `hcp-vs_blood_pressure`
-      WHERE `userid` = id ORDER BY `date` DESC, `time` DESC LIMIT 1;
-
-      SELECT `celsius`, `date` FROM `hcp-vs_body_temperature`
-      WHERE `userid` = id ORDER BY `date` DESC, `time` DESC LIMIT 1;
-
-      SELECT `bpm`, `date` FROM `hcp-vs_heart_rate`
-      WHERE `userid` = id ORDER BY `date` DESC, `time` DESC LIMIT 1;
-
-      SELECT `bpm`, `date` FROM `hcp-vs_respiratory_rate`
-      WHERE `userid` = id ORDER BY `date` DESC, `time` DESC LIMIT 1;
-END$$
-
-DELIMITER ;
+CREATE TABLE `hcp-blood_test` (
+  `id` int(11) NOT NULL,
+  `userid` int(11) NOT NULL,
+  `17 Hydroxyprogesterone` float DEFAULT NULL,
+  `25-hydroxyvitamin D` float DEFAULT NULL,
+  `Acetoacetate` float DEFAULT NULL,
+  `Acidity` float DEFAULT NULL,
+  `Alcohol` float DEFAULT NULL,
+  `Ammonia` float DEFAULT NULL,
+  `Amylase` float DEFAULT NULL,
+  `Ascorbic Acid` float DEFAULT NULL,
+  `Bicarbonate` float DEFAULT NULL,
+  `Bilirubin` float DEFAULT NULL,
+  `Blood Volume` float DEFAULT NULL,
+  `Calcium` float DEFAULT NULL,
+  `Carbon Dioxide Pressure` float DEFAULT NULL,
+  `Carbon Monoxide` float DEFAULT NULL,
+  `CD4 Cell Count` float DEFAULT NULL,
+  `Ceruloplasmin` float DEFAULT NULL,
+  `Chloride` float DEFAULT NULL,
+  `Complete Blood Cell Count` float DEFAULT NULL,
+  `Copper` float DEFAULT NULL,
+  `Creatine Kinase` float DEFAULT NULL,
+  `Creatine Kinase Isoenzymes` float DEFAULT NULL,
+  `Creatinine` float DEFAULT NULL,
+  `Electrolytes` float DEFAULT NULL,
+  `Erythrocyte Sedimentation Rate` float DEFAULT NULL,
+  `Glucose` float DEFAULT NULL,
+  `Hematocrit` float DEFAULT NULL,
+  `Hemoglobin` float DEFAULT NULL,
+  `Iron` float DEFAULT NULL,
+  `Iron-binding Capacity` float DEFAULT NULL,
+  `Lactate` float DEFAULT NULL,
+  `Lactic Dehydrogenase` float DEFAULT NULL,
+  `Lead` float DEFAULT NULL,
+  `Lipase` float DEFAULT NULL,
+  `Zinc` float DEFAULT NULL,
+  `Lipids Cholesterol` float DEFAULT NULL,
+  `Lipids Triglycerides` float DEFAULT NULL,
+  `Magnesium` float DEFAULT NULL,
+  `Mean Corpuscular Hemoglobin` float DEFAULT NULL,
+  `Mean Corpuscular Hemoglobin Concentration` float DEFAULT NULL,
+  `Mean Corpuscular Volume` float DEFAULT NULL,
+  `Osmolality` float DEFAULT NULL,
+  `Oxygen Pressure` float DEFAULT NULL,
+  `Oxygen Saturation` float DEFAULT NULL,
+  `Phosphatase, Prostatic` float DEFAULT NULL,
+  `Phosphatase` float DEFAULT NULL,
+  `Phosphorus` float DEFAULT NULL,
+  `Platelet Count` float DEFAULT NULL,
+  `Potassium` float DEFAULT NULL,
+  `Prostate-Specific Antigen` float DEFAULT NULL,
+  `Proteins Total` float DEFAULT NULL,
+  `Proteins Albumin` float DEFAULT NULL,
+  `Proteins Globulin` float DEFAULT NULL,
+  `Prothrombin` float DEFAULT NULL,
+  `Pyruvic Acid` float DEFAULT NULL,
+  `Red Blood Cell Count` float DEFAULT NULL,
+  `Sodium` float DEFAULT NULL,
+  `Thyroid-Stimulating Hormone` float DEFAULT NULL,
+  `Transaminase Alanine` float DEFAULT NULL,
+  `Transaminase Aspartate` float DEFAULT NULL,
+  `Urea Nitrogen` float DEFAULT NULL,
+  `BUN/Creatinine Ratio` float DEFAULT NULL,
+  `Uric Acid` float DEFAULT NULL,
+  `Vitamin A` float DEFAULT NULL,
+  `WBC` float DEFAULT NULL,
+  `White Blood Cell Count` float DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `time` time DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -203,6 +256,12 @@ CREATE TABLE `hcp-vs_respiratory_rate` (
 --
 
 --
+-- Indexes for table `hcp-blood_test`
+--
+ALTER TABLE `hcp-blood_test`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `hcp-dentist_visit`
 --
 ALTER TABLE `hcp-dentist_visit`
@@ -263,15 +322,20 @@ ALTER TABLE `hcp-vs_respiratory_rate`
 --
 
 --
+-- AUTO_INCREMENT for table `hcp-blood_test`
+--
+ALTER TABLE `hcp-blood_test`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+--
 -- AUTO_INCREMENT for table `hcp-dentist_visit`
 --
 ALTER TABLE `hcp-dentist_visit`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 --
 -- AUTO_INCREMENT for table `hcp-diabetes_sugar_test`
 --
 ALTER TABLE `hcp-diabetes_sugar_test`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 --
 -- AUTO_INCREMENT for table `hcp-menstrual_cycle`
 --
