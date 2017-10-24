@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp"
-	xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
-    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="8088" doc:name="HTTP Listener Configuration"/>
-    <db:mysql-config name="MySQL_Configuration"      doc:name="MySQL Configuration" url="jdbc:mysql://mysql.stackcp.com:49715/sirtts-hcp-app-3137fd82?user=sirtts-hcp-app-3137fd82&amp;password=hcp-app-3137fd82&amp;noAccessToProcedureBodies=true"/>
+    <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="5980" doc:name="HTTP Listener Configuration"/>
+    <db:mysql-config name="MySQL_Configuration"      doc:name="MySQL Configuration" database="sirtts_hcp_app" host="localhost" password="sirtts_Hamo-ayman2017" port="3306" user="root"/>
     <spring:beans>
         <spring:bean id="Bean" name="Methods" class="hcp.Methods"/>
     </spring:beans>
@@ -36,7 +37,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
             <db:in-param name="gender" type="VARCHAR" value="#[flowVars.gender]"/>
             <db:in-param name="birthday" type="DATE" value="#[flowVars.birthday]"/>
 		</db:stored-procedure>
-        <set-payload value="&lt;p&gt; To activate your account &lt;a href=&quot;http://hcp.cloudhub.io/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token]&quot;&gt; click here &lt;/a&gt;&lt;/p&gt; &lt;p&gt; or copy and paste this link into your browser &lt;/p&gt; &lt;p&gt; http://hcp.cloudhub.io/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token] &lt;/p&gt;" mimeType="text/html" doc:name="Email Content"/>
+        <set-payload value="&lt;p&gt; To activate your account &lt;a href=&quot;http://40.118.64.109:5980/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token]&quot;&gt; click here &lt;/a&gt;&lt;/p&gt; &lt;p&gt; or copy and paste this link into your browser &lt;/p&gt; &lt;p&gt; http://40.118.64.109:5980/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token] &lt;/p&gt;" mimeType="text/html" doc:name="Email Content"/>
         <smtp:outbound-endpoint host="smtp.hamys.me" port="587" user="hcp@hamys.me" password="hcp@sirtts" connector-ref="SMTP" responseTimeout="10000" doc:name="SMTP" from="hcp@hamys.me" subject="Account Activation" to="#[flowVars.email]" mimeType="text/html"/>
 		<set-payload value="{
 	&quot;status&quot;: true
@@ -182,8 +183,10 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/blood_pressure">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_pressure" allowedMethods="POST" doc:name="HTTP"/>
+<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
+   
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_pressure">
-            <db:parameterized-query><![CDATA[SELECT `systolic`, `diastolic`, `date`, `time` FROM `hcp-vs_blood_pressure` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `systolic`, `diastolic`, `date`, `time` FROM `hcp-vs_blood_pressure` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -192,8 +195,9 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/heart_rate">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/heart_rate" allowedMethods="POST" doc:name="HTTP"/>
+<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - heart_rate">
-            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_heart_rate` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_heart_rate` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -202,8 +206,9 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/body_temperature">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/body_temperature" allowedMethods="POST" doc:name="HTTP"/>
+<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - body_temperature">
-            <db:parameterized-query><![CDATA[SELECT `celsius`, `date`, `time` FROM `hcp-vs_body_temperature` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `celsius`, `date`, `time` FROM `hcp-vs_body_temperature` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -212,8 +217,9 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/respiratory_rate">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/respiratory_rate" allowedMethods="POST" doc:name="HTTP"/>
+		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT -respiratory_rate">
-            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_respiratory_rate` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_respiratory_rate` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -234,8 +240,9 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/menstrual_cycle">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/menstrual_cycle" allowedMethods="POST" doc:name="HTTP"/>
+<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - menstrual_cycle">
-            <db:parameterized-query><![CDATA[SELECT `start_time` AS 'start time', `end_time` AS 'end time', `start_date` AS 'start date', `end_date` AS 'end date' FROM `hcp-menstrual_cycle` WHERE userid = #[json:userid] ORDER BY `created_at` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `start_time` AS 'start time', `end_time` AS 'end time', `start_date` AS 'start date', `end_date` AS 'end date' FROM `hcp-menstrual_cycle` WHERE userid = #[message.payload[0].userid] ORDER BY `created_at` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Exception Strategy">
@@ -256,8 +263,10 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/sugar_test">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/sugar_test" allowedMethods="POST" doc:name="HTTP"/>
+        <json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
+
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - diabetes_sugar_test">
-            <db:parameterized-query><![CDATA[SELECT `test_result` AS `test result`, `date`, `time` FROM `hcp-diabetes_sugar_test` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `test_result` AS `test result`, `date`, `time` FROM `hcp-diabetes_sugar_test` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -276,8 +285,9 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/dentist_visit">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit" allowedMethods="POST" doc:name="HTTP"/>
+		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - dentist_visit">
-            <db:parameterized-query><![CDATA[SELECT `treatments`, `date`, `time` FROM `hcp-dentist_visit` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `treatments`, `date`, `time` FROM `hcp-dentist_visit` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -311,8 +321,9 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/blood_test/all">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test/all" allowedMethods="POST" doc:name="HTTP"/>
+		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_test">
-            <db:parameterized-query><![CDATA[SELECT `id`, `date`, `time` FROM `hcp-blood_test` WHERE userid = #[json:userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `id`, `date`, `time` FROM `hcp-blood_test` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -321,8 +332,9 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     </flow>
     <flow name="/blood_test">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test" allowedMethods="POST" doc:name="HTTP"/>
+		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_test">
-            <db:parameterized-query><![CDATA[SELECT `17 Hydroxyprogesterone`, `25-hydroxyvitamin D`, `Acetoacetate`, `Acidity`, `Alcohol`, `Ammonia`, `Amylase`, `Ascorbic Acid`, `Bicarbonate`, `Bilirubin`, `Blood Volume`, `Calcium`, `Carbon Dioxide Pressure`, `Carbon Monoxide`, `CD4 Cell Count`, `Ceruloplasmin`, `Chloride`, `Complete Blood Cell Count`, `Copper`, `Creatine Kinase`, `Creatine Kinase Isoenzymes`, `Creatinine`, `Electrolytes`, `Erythrocyte Sedimentation Rate`, `Glucose`, `Hematocrit`, `Hemoglobin`, `Iron`, `Iron-binding Capacity`, `Lactate`, `Lactic Dehydrogenase`, `Lead`, `Lipase`, `Zinc`, `Lipids Cholesterol`, `Lipids Triglycerides`, `Magnesium`, `Mean Corpuscular Hemoglobin`, `Mean Corpuscular Hemoglobin Concentration`, `Mean Corpuscular Volume`, `Osmolality`, `Oxygen Pressure`, `Oxygen Saturation`, `Phosphatase, Prostatic`, `Phosphatase`, `Phosphorus`, `Platelet Count`, `Potassium`, `Prostate-Specific Antigen`, `Proteins Total`, `Proteins Albumin`, `Proteins Globulin`, `Prothrombin`, `Pyruvic Acid`, `Red Blood Cell Count`, `Sodium`, `Thyroid-Stimulating Hormone`, `Transaminase Alanine`, `Transaminase Aspartate`, `Urea Nitrogen`, `BUN/Creatinine Ratio`, `Uric Acid`, `Vitamin A`, `WBC`, `White Blood Cell Count` FROM `hcp-blood_test` WHERE id = #[json:id] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `17 Hydroxyprogesterone`, `25-hydroxyvitamin D`, `Acetoacetate`, `Acidity`, `Alcohol`, `Ammonia`, `Amylase`, `Ascorbic Acid`, `Bicarbonate`, `Bilirubin`, `Blood Volume`, `Calcium`, `Carbon Dioxide Pressure`, `Carbon Monoxide`, `CD4 Cell Count`, `Ceruloplasmin`, `Chloride`, `Complete Blood Cell Count`, `Copper`, `Creatine Kinase`, `Creatine Kinase Isoenzymes`, `Creatinine`, `Electrolytes`, `Erythrocyte Sedimentation Rate`, `Glucose`, `Hematocrit`, `Hemoglobin`, `Iron`, `Iron-binding Capacity`, `Lactate`, `Lactic Dehydrogenase`, `Lead`, `Lipase`, `Zinc`, `Lipids Cholesterol`, `Lipids Triglycerides`, `Magnesium`, `Mean Corpuscular Hemoglobin`, `Mean Corpuscular Hemoglobin Concentration`, `Mean Corpuscular Volume`, `Osmolality`, `Oxygen Pressure`, `Oxygen Saturation`, `Phosphatase, Prostatic`, `Phosphatase`, `Phosphorus`, `Platelet Count`, `Potassium`, `Prostate-Specific Antigen`, `Proteins Total`, `Proteins Albumin`, `Proteins Globulin`, `Prothrombin`, `Pyruvic Acid`, `Red Blood Cell Count`, `Sodium`, `Thyroid-Stimulating Hormone`, `Transaminase Alanine`, `Transaminase Aspartate`, `Urea Nitrogen`, `BUN/Creatinine Ratio`, `Uric Acid`, `Vitamin A`, `WBC`, `White Blood Cell Count` FROM `hcp-blood_test` WHERE id = #[message.payload[0].id] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Copy_of_Catch Exception Strategy">
@@ -332,7 +344,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     <flow name="/blood_test/fields">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test/fields" allowedMethods="GET" doc:name="HTTP"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_test">
-            <db:parameterized-query><![CDATA[SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'sirtts-hcp-app-3137fd82' AND TABLE_NAME = 'hcp-blood_test' AND DATA_TYPE = 'FLOAT';]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'sirtts_hcp_app' AND TABLE_NAME = 'hcp-blood_test' AND DATA_TYPE = 'FLOAT';]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
