@@ -181,6 +181,21 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
+	 <flow name="/spo2/set">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/spo2/set" allowedMethods="POST" doc:name="HTTP"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - spo2">
+            <db:parameterized-query><![CDATA[INSERT INTO `hcp-vs_spo2`(`userid`, `percent`, `date`, `time`) VALUES (#[json:userid],#[json:percent],#[json:date],#[json:time])]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{
+	&quot;status&quot;: true
+}" mimeType="text/json" doc:name="True"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{
+	&quot;status&quot;: false,
+	&quot;error message&quot;: &quot;Unexpected Error!&quot;
+}" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
     <flow name="/blood_pressure">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_pressure" allowedMethods="POST" doc:name="HTTP"/>
 <json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
@@ -220,6 +235,17 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT -respiratory_rate">
             <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_respiratory_rate` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+	<flow name="/spo2">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/spo2" allowedMethods="POST" doc:name="HTTP"/>
+		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT -spo2">
+            <db:parameterized-query><![CDATA[SELECT `percent`, `date`, `time` FROM `hcp-vs_spo2` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
