@@ -376,6 +376,23 @@ INSERT INTO `hcp-vs_respiratory_rate` (`id`, `userid`, `bpm`, `date`, `time`, `c
 (3, 4, 4444, '2017-09-13', '10:33:00', '2017-09-13 08:33:13', '0000-00-00 00:00:00'),
 (4, 3, 34, '2017-09-14', '20:55:00', '2017-09-14 18:55:31', '0000-00-00 00:00:00');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hcp-vs_spo2`
+--
+
+CREATE TABLE `hcp-vs_spo2` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userid` int(11) NOT NULL,
+  `percent` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `time` time DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
+
 --
 -- Indexes for dumped tables
 --
