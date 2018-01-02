@@ -402,14 +402,13 @@ CREATE TABLE `hcp-dentist_visit` (
 --
 
 CREATE TABLE `hcp-dentist_next_visit` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
-  `date` date NOT NULL,
-  `time` time DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
+   `userid` int(11) NOT NULL,
+   `date` date NOT NULL,
+   `time` time DEFAULT NULL,
+   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+   PRIMARY KEY (`userid`)
+ ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=latin1
 
 --
 -- Indexes for dumped tables
