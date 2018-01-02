@@ -299,27 +299,6 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
             <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
-    <flow name="/dentist_visit/set">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit/set" allowedMethods="POST" doc:name="HTTP"/>
-        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - dentist_visit">
-            <db:parameterized-query><![CDATA[INSERT INTO `hcp-dentist_visit`(`userid`, `treatments`, `date`, `time`) VALUES (#[json:userid],#[json:treatments],#[json:date],#[json:time]);]]></db:parameterized-query>
-        </db:insert>
-        <set-payload value="{  &quot;status&quot;: true }" mimeType="text/json" doc:name="True"/>
-        <catch-exception-strategy doc:name="Catch Exception Strategy">
-            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
-        </catch-exception-strategy>
-    </flow>
-    <flow name="/dentist_visit">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit" allowedMethods="POST" doc:name="HTTP"/>
-		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
-        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - dentist_visit">
-            <db:parameterized-query><![CDATA[SELECT `treatments`, `date`, `time` FROM `hcp-dentist_visit` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
-        </db:select>
-        <json:object-to-json-transformer doc:name="Object to JSON"/>
-        <catch-exception-strategy doc:name="Catch Exception Strategy">
-            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
-        </catch-exception-strategy>
-    </flow>
     <flow name="/blood_test/set">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/blood_test/set" allowedMethods="POST" doc:name="HTTP"/>
         <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - blood_test">
@@ -377,4 +356,47 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
             <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
     </flow>
+	 <flow name="/dentist_visit/fields">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit/fields" allowedMethods="GET" doc:name="HTTP"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - dentist_visit_exam">
+            <db:parameterized-query><![CDATA[SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'sirtts_hcp_app' AND TABLE_NAME = 'hcp-dentist_visit' AND DATA_TYPE = 'tinyint';]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+	<flow name="/dentist_visit">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit" allowedMethods="POST" doc:name="HTTP"/>
+		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - dentist_visit">
+            <db:parameterized-query><![CDATA[SELECT `teeth cleaning`,`whitening`,`restoration`,`crowns`,`bridges` ,`braces`,`endodontic therapy`,`periodontal therapy`,`extraction`,`oral surgery`, `notes` FROM `hcp-dentist_visit` WHERE id = #[message.payload[0].id] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Copy_of_Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+	<flow name="/dentist_visit/set">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit/set" allowedMethods="POST" doc:name="HTTP"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="INSERT - dentist_visit">
+            <db:parameterized-query><![CDATA[INSERT INTO `hcp-dentist_visit`(`userid`, `teeth cleaning`,`whitening`,`restoration`,`crowns`,`bridges` ,`braces`,`endodontic therapy`,`periodontal therapy`,`extraction`,`oral surgery`, `notes`, `date`, `time`) VALUES (#[json:userid],#[json:teeth cleaning],#[json:whitening],#[json:restoration],#[json:crowns],#[json:bridges],#[json:braces],#[json:endodontic therapy],#[json:periodontal therapy],#[json:extraction],#[json:oral surgery],#[json:notes],#[json:date],#[json:time]);]]></db:parameterized-query>
+        </db:insert>
+        <set-payload value="{  &quot;status&quot;: true }" mimeType="text/json" doc:name="True"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+	 <flow name="/dentist_visit/all">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit/all" allowedMethods="POST" doc:name="HTTP"/>
+		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="SELECT - dentist_visit">
+            <db:parameterized-query><![CDATA[SELECT `id`, `date`, `time` FROM `hcp-dentist_visit` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+        </db:select>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+	 
 </mule>
