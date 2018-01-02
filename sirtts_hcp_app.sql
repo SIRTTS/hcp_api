@@ -136,31 +136,6 @@ INSERT INTO `hcp-blood_test` (`id`, `userid`, `17 Hydroxyprogesterone`, `25-hydr
 -- --------------------------------------------------------
 
 --
--- Table structure for table `hcp-dentist_visit`
---
-
-CREATE TABLE `hcp-dentist_visit` (
-  `id` int(11) NOT NULL,
-  `userid` int(11) NOT NULL,
-  `treatments` varchar(255) NOT NULL,
-  `date` date NOT NULL,
-  `time` time DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `hcp-dentist_visit`
---
-
-INSERT INTO `hcp-dentist_visit` (`id`, `userid`, `treatments`, `date`, `time`, `created_at`, `updated_at`) VALUES
-(1, 3, 'cleaning, crown and restoration', '2017-09-10', '12:30:30', '2017-09-14 18:22:11', '0000-00-00 00:00:00'),
-(2, 3, 'extraction, examination and cleaning', '2017-09-11', '12:30:30', '2017-09-14 18:22:46', '0000-00-00 00:00:00'),
-(3, 3, 'cleaning, whitening and extraction', '2017-09-19', '13:33:00', '2017-09-19 11:33:41', '0000-00-00 00:00:00');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `hcp-diabetes_sugar_test`
 --
 
@@ -399,7 +374,7 @@ CREATE TABLE `hcp-vs_spo2` (
 -- Table structure for table `hcp-dentist_exam`
 --
 
-CREATE TABLE `hcp-dentist_exam` (
+CREATE TABLE `hcp-dentist_visit` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
   `teeth cleaning` boolean DEFAULT 0,
@@ -412,6 +387,7 @@ CREATE TABLE `hcp-dentist_exam` (
   `periodontal therapy` boolean DEFAULT 0,
   `extraction` boolean DEFAULT 0,
   `oral surgery` boolean DEFAULT 0,
+  `notes` text NULL,
   `date` date DEFAULT NULL,
   `time` time DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -429,11 +405,6 @@ CREATE TABLE `hcp-dentist_exam` (
 ALTER TABLE `hcp-blood_test`
   ADD PRIMARY KEY (`id`);
 
---
--- Indexes for table `hcp-dentist_visit`
---
-ALTER TABLE `hcp-dentist_visit`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `hcp-diabetes_sugar_test`
@@ -494,11 +465,6 @@ ALTER TABLE `hcp-vs_respiratory_rate`
 --
 ALTER TABLE `hcp-blood_test`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
---
--- AUTO_INCREMENT for table `hcp-dentist_visit`
---
-ALTER TABLE `hcp-dentist_visit`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 --
 -- AUTO_INCREMENT for table `hcp-diabetes_sugar_test`
 --
