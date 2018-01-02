@@ -393,6 +393,32 @@ CREATE TABLE `hcp-vs_spo2` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `hcp-dentist_exam`
+--
+
+CREATE TABLE `hcp-dentist_exam` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userid` int(11) NOT NULL,
+  `teeth cleaning` boolean DEFAULT 0,
+  `whitening` boolean DEFAULT 0,
+  `restoration` boolean DEFAULT 0,
+  `crowns` boolean DEFAULT 0,
+  `bridges` boolean DEFAULT 0,
+  `braces` boolean DEFAULT 0,
+  `endodontic therapy` boolean DEFAULT 0,
+  `periodontal therapy` boolean DEFAULT 0,
+  `extraction` boolean DEFAULT 0,
+  `oral surgery` boolean DEFAULT 0,
+  `date` date DEFAULT NULL,
+  `time` time DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1
+
 --
 -- Indexes for dumped tables
 --
