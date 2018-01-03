@@ -39,6 +39,10 @@ CREATE PROCEDURE `vital_signs` (IN `id` INT)  BEGIN
       WHERE `userid` = id ORDER BY `date` DESC, `time` DESC LIMIT 1;
 END$$
 
+CREATE PROCEDURE `update_dentist_next_visit` (IN `userid` int, IN `date` DATE)  BEGIN
+   REPLACE INTO `hcp-dentist_next_visit`(`userid`, `date`) VALUES (userid, date);
+END$$
+
 DELIMITER ;
 
 -- --------------------------------------------------------
