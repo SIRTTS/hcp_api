@@ -357,9 +357,13 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         </catch-exception-strategy>
     </flow>
 	 <flow name="/dentist_visit/fields">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit/fields" allowedMethods="GET" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit/fields" allowedMethods="POST" doc:name="HTTP"/>
+		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - dentist_visit_exam">
-            <db:parameterized-query><![CDATA[SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'sirtts_hcp_app' AND TABLE_NAME = 'hcp-dentist_visit' AND DATA_TYPE = 'tinyint';]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT COLUMN_NAME,null as date FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'sirtts_hcp_app' AND 
+TABLE_NAME = 'hcp-dentist_visit' AND DATA_TYPE = 'tinyint' 
+union SELECT null as COLUMN_NAME, `date` FROM sirtts_hcp_app.`hcp-dentist_next_visit` where userid = #[message.payload[0].userid];
+]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -394,6 +398,19 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
             <db:parameterized-query><![CDATA[SELECT `id`, `date`, `time` FROM `hcp-dentist_visit` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
+        </catch-exception-strategy>
+    </flow>
+	
+	 <flow name="/dentist_visit/update_next_visit">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/dentist_visit/update_next_visit" allowedMethods="POST" doc:name="HTTP"/>
+           <db:stored-procedure config-ref="MySQL_Configuration" doc:name="UPDATE - dentist_visit">
+            <db:parameterized-query><![CDATA[CALL update_dentist_next_visit(#[json:userid],#[json:date]);]]></db:parameterized-query>
+        </db:stored-procedure>
+        <set-payload value="{
+	&quot;status&quot;: true
+}" mimeType="text/json" doc:name="True"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
             <set-payload value="{  &quot;status&quot;: false,  &quot;error message&quot;: &quot;Unexpected Error!&quot; }" mimeType="text/json" doc:name="False"/>
         </catch-exception-strategy>
