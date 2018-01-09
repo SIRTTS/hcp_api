@@ -37,7 +37,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
             <db:in-param name="gender" type="VARCHAR" value="#[flowVars.gender]"/>
             <db:in-param name="birthday" type="DATE" value="#[flowVars.birthday]"/>
 		</db:stored-procedure>
-        <set-payload value="&lt;p&gt; To activate your account &lt;a href=&quot;http://40.118.64.109:5980/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token]&quot;&gt; click here &lt;/a&gt;&lt;/p&gt; &lt;p&gt; or copy and paste this link into your browser &lt;/p&gt; &lt;p&gt; http://40.118.64.109:5980/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token] &lt;/p&gt;" mimeType="text/html" doc:name="Email Content"/>
+        <set-payload value="&lt;p&gt; To activate your account &lt;a href=&quot;http://hcp.westeurope.cloudapp.azure.com:5980/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token]&quot;&gt; click here &lt;/a&gt;&lt;/p&gt; &lt;p&gt; or copy and paste this link into your browser &lt;/p&gt; &lt;p&gt; http://hcp.westeurope.cloudapp.azure.com:5980/activate_account?email=#[flowVars.email]&amp;token=#[flowVars.token] &lt;/p&gt;" mimeType="text/html" doc:name="Email Content"/>
         <smtp:outbound-endpoint host="smtp.hamys.me" port="587" user="hcp@hamys.me" password="hcp@sirtts" connector-ref="SMTP" responseTimeout="10000" doc:name="SMTP" from="hcp@hamys.me" subject="Account Activation" to="#[flowVars.email]" mimeType="text/html"/>
 		<set-payload value="{
 	&quot;status&quot;: true
