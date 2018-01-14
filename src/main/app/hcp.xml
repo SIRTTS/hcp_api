@@ -201,7 +201,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
 <json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
    
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - blood_pressure">
-            <db:parameterized-query><![CDATA[SELECT `systolic`, `diastolic`, `date`, `time` FROM `hcp-vs_blood_pressure` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `systolic`, `diastolic`, `date`, `time` FROM `hcp-vs_blood_pressure` WHERE userid = #[message.payload[0].userid] AND date >= #[message.payload[0].startDate] AND date <= #[message.payload[0].endDate] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -212,7 +212,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <http:listener config-ref="HTTP_Listener_Configuration" path="/heart_rate" allowedMethods="POST" doc:name="HTTP"/>
 <json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - heart_rate">
-            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_heart_rate` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_heart_rate` WHERE userid = #[message.payload[0].userid] AND date >= #[message.payload[0].startDate] AND date <= #[message.payload[0].endDate] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -223,7 +223,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <http:listener config-ref="HTTP_Listener_Configuration" path="/body_temperature" allowedMethods="POST" doc:name="HTTP"/>
 <json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - body_temperature">
-            <db:parameterized-query><![CDATA[SELECT `celsius`, `date`, `time` FROM `hcp-vs_body_temperature` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `celsius`, `date`, `time` FROM `hcp-vs_body_temperature` WHERE userid = #[message.payload[0].userid] AND date >= #[message.payload[0].startDate] AND date <= #[message.payload[0].endDate] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -234,7 +234,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <http:listener config-ref="HTTP_Listener_Configuration" path="/respiratory_rate" allowedMethods="POST" doc:name="HTTP"/>
 		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT -respiratory_rate">
-            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_respiratory_rate` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `bpm`, `date`, `time` FROM `hcp-vs_respiratory_rate` WHERE userid = #[message.payload[0].userid] AND date >= #[message.payload[0].startDate] AND date <= #[message.payload[0].endDate] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -245,7 +245,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <http:listener config-ref="HTTP_Listener_Configuration" path="/spo2" allowedMethods="POST" doc:name="HTTP"/>
 		<json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT -spo2">
-            <db:parameterized-query><![CDATA[SELECT `percent`, `date`, `time` FROM `hcp-vs_spo2` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `percent`, `date`, `time` FROM `hcp-vs_spo2` WHERE userid = #[message.payload[0].userid] AND date >= #[message.payload[0].startDate] AND date <= #[message.payload[0].endDate] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
@@ -292,7 +292,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
         <json:json-to-object-transformer returnClass="java.util.List" doc:name="JSON to Object"/>
 
         <db:select config-ref="MySQL_Configuration" doc:name="SELECT - diabetes_sugar_test">
-            <db:parameterized-query><![CDATA[SELECT `test_result` AS `test result`, `date`, `time` FROM `hcp-diabetes_sugar_test` WHERE userid = #[message.payload[0].userid] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
+            <db:parameterized-query><![CDATA[SELECT `test_result` AS `mg/dl`, `date`, `time` FROM `hcp-diabetes_sugar_test` WHERE userid = #[message.payload[0].userid] AND date >= #[message.payload[0].startDate] AND date <= #[message.payload[0].endDate] ORDER BY `date` DESC, `time` DESC;]]></db:parameterized-query>
         </db:select>
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
